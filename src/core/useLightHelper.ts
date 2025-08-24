@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
 import { useHelperStore } from "../stores/HelperStore";
-import { RefObject } from "react";
+import { RefObject, useEffect } from "react";
 
 export function useLightHelper() {
   /**
@@ -13,40 +13,53 @@ export function useLightHelper() {
    */
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+
   //getting the helpers array and setSelectedLight from zustand
-  const helperArr: THREE.Object3D[] = [];
+
+  const helperArr = useHelperStore.getState().helperArr;
+  const addHelper = useHelperStore.getState().addHelper;
+  const deleteHelpers = useHelperStore.getState().deleteHelpers;
+
+  const setScene = useHelperStore((state) => {
+    return state.setScene;
+  });
+
   const setSelectedLight = useHelperStore((state) => {
     return state.setSelectedLight;
   });
 
   //returns a function that creates the helper based on the light type
   const { scene, camera } = useThree();
+  useEffect(() => {
+    const onMouseClick = (ev: MouseEvent) => {
+      //normalizing pointer coord (-1 to 1)
+      pointer.x = (ev.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(ev.clientY / window.innerHeight) * 2 + 1;
 
-  const onMouseClick = (ev: MouseEvent) => {
-    //normalizing pointer coord (-1 to 1)
-    pointer.x = (ev.clientX / window.innerWidth) * 2 - 1;
-    pointer.y = -(ev.clientY / window.innerHeight) * 2 + 1;
+      //updating the raycaster
+      raycaster.setFromCamera(pointer, camera);
 
-    //updating the raycaster
-    raycaster.setFromCamera(pointer, camera);
+      //preparing intersection for the helpers
+      const intersects = raycaster.intersectObjects(helperArr, true);
 
-    //preparing intersection for the helpers
-    const intersects = raycaster.intersectObjects(helperArr, true);
+      if (intersects.length > 0) {
+        const clickObj = intersects[0]?.object;
 
-    if (intersects.length > 0) {
-      const clickObj = intersects[0]?.object;
+        const helperClicked = clickObj?.userData.isHelper
+          ? clickObj
+          : clickObj?.parent;
 
-      const helperClicked = clickObj?.userData.isHelper
-        ? clickObj
-        : clickObj?.parent;
-
-      if (helperClicked) {
-        setSelectedLight(helperClicked.userData.key);
+        if (helperClicked) {
+          setSelectedLight(helperClicked.userData.key);
+        }
       }
-    }
-  };
+    };
 
-  window.addEventListener("click", onMouseClick);
+    window.addEventListener("click", onMouseClick);
+    return () => {
+      window.removeEventListener("click", onMouseClick);
+    };
+  }, [helperArr]);
 
   return (
     ref: RefObject<THREE.Light<THREE.LightShadow<THREE.Camera> | undefined>[]>,
@@ -55,6 +68,7 @@ export function useLightHelper() {
   ) => {
     if (!ref.current) return;
     let helper: THREE.Object3D | null = null;
+
     ref.current.forEach((light, idx) => {
       if (light) {
         switch (light.type) {
@@ -63,7 +77,6 @@ export function useLightHelper() {
               light as THREE.DirectionalLight,
               size
             );
-
             helper.userData = { key: key[idx], isHelper: true };
             break;
 
@@ -90,7 +103,9 @@ export function useLightHelper() {
       }
     });
     if (helper) {
+      addHelper(helper);
       scene.add(helper);
+      setScene(scene);
 
       let fId: number;
       const animate = () => {
@@ -98,13 +113,12 @@ export function useLightHelper() {
         fId = requestAnimationFrame(animate);
       };
       animate();
-
-      helperArr.push(helper);
     }
     return () => {
       if (helper) {
-        scene.remove(helper);
         (helper as any).dispose();
+        deleteHelpers(helper);
+        scene.remove(helper);
       }
     };
   };

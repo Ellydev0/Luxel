@@ -8,6 +8,7 @@ import { LightData, LightPropsMap } from "../types/lights";
 
 type LightStore = {
   lights: LightData[]; //contain any type of
+  deletedLightKey: string;
 
   updateLights: <T extends Lights>(
     id: string,
@@ -15,11 +16,12 @@ type LightStore = {
   ) => void;
   addLights: <T extends Lights>(props: LightPropsMap[T]) => void;
   deleteLight: (id: string) => void;
+  setDeleteKey: (key: string) => void;
 };
 
 export const useLightStore = create<LightStore>()((set) => ({
   lights: [],
-
+  deletedLightKey: "",
   updateLights: (
     id,
     newProps //will be used to update lights (to be used in luxel factory)
@@ -37,5 +39,10 @@ export const useLightStore = create<LightStore>()((set) => ({
   deleteLight: (id) =>
     set((state) => ({
       lights: state.lights.filter((light) => light.key !== id),
+    })),
+
+  setDeleteKey: (key) =>
+    set((state) => ({
+      deletedLightKey: (state.deletedLightKey = key),
     })),
 }));

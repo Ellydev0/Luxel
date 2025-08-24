@@ -6,7 +6,6 @@ import { Pane } from "tweakpane";
 import { MainLight } from "../types/main";
 import { uid } from "uid/single";
 import {
-  AmbientLight,
   DirectionalLight,
   HemisphereLight,
   PointLight,
@@ -19,13 +18,15 @@ const PARAMS: MainLight = {
   // prop lightType and type have their purposes
   key: uid(3),
   name: "",
-  type: "ambient",
+  type: "directional",
   color: "#ffffff",
   intensity: 1,
 };
 export const useCoreGui = () => {
   const Hemisphere: HemisphereLight = {
     ...PARAMS,
+    position: { x: 0, y: 0, z: 0 },
+
     lightType: "hemisphere",
     groundColor: "#ffffff",
   };
@@ -69,6 +70,7 @@ export const useCoreGui = () => {
 
     defaultPane.element.style.position = "absolute";
     defaultPane.element.style.right = "80.5vw";
+    defaultPane.element.style.width = "100%";
 
     //GUI for the main light props
     defaultPane.addBinding(PARAMS, "name");
@@ -77,13 +79,12 @@ export const useCoreGui = () => {
 
     defaultPane.addBinding(PARAMS, "intensity", {
       min: 0,
-      max: 100,
+      max: 10,
       step: 0.1,
     });
 
     defaultPane.addBinding(PARAMS, "type", {
       options: {
-        AmbientLight: "ambient",
         DirectionalLight: "directional",
         PointLight: "point",
         SpotLight: "spot",
@@ -109,10 +110,7 @@ export const useCoreGui = () => {
           lightObj = { ...Point, ...PARAMS };
         } else if (PARAMS.type === "spot") {
           lightObj = { ...Spot, ...PARAMS };
-        } else {
-          lightObj = { ...PARAMS };
         }
-        console.log(lightObj);
         addLight(lightObj); // sends light data to zustand
       });
 

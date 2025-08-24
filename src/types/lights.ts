@@ -12,6 +12,7 @@ export interface AmbientLight extends MainLight {
 export interface HemisphereLight extends MainLight {
   //color from the main light type is the skylight
   groundColor: string;
+  position: { x: number; y: number; z: number };
   lightType: "hemisphere";
 }
 

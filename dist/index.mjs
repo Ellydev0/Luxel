@@ -44,7 +44,7 @@ var useCoreGui = () => {
     ...PARAMS,
     lightType: "directional",
     position: { x: 3, y: 3, z: 3 },
-    target: { x: 0, y: 0, z: 0 },
+    target: "",
     shadow: false
   };
   const Point = {
@@ -64,12 +64,12 @@ var useCoreGui = () => {
     penumbra: 1,
     position: { x: 3, y: 3, z: 3 },
     shadow: false,
-    target: { x: 0, y: 3, z: 3 }
+    target: ""
   };
   const addLight = useLightStore((state) => {
     return state.addLights;
   });
-  const create4 = () => {
+  const create5 = () => {
     const defaultPane = new Pane({
       title: "Create Light"
     });
@@ -111,7 +111,7 @@ var useCoreGui = () => {
     return defaultPane;
   };
   useEffect(() => {
-    const pane = create4();
+    const pane = create5();
     return () => {
       pane.dispose();
     };
@@ -241,6 +241,29 @@ var useAmbientStore = create3()((set) => ({
   }))
 }));
 
+// src/stores/RegisterMeshStore.ts
+import { create as create4 } from "zustand";
+import * as THREE2 from "three";
+var useRegisterMeshStore = create4()((set, get) => ({
+  mesh: {},
+  registerMesh: (obj, ref) => {
+    set((state) => ({
+      mesh: {
+        ...state.mesh,
+        [ref]: obj
+      }
+    }));
+  },
+  getMesh: (ref) => {
+    const res = get().mesh[ref];
+    if (res) {
+      return res;
+    } else {
+      return new THREE2.Object3D();
+    }
+  }
+}));
+
 // src/core/CoreLights.tsx
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 var CoreLights = () => {
@@ -251,6 +274,9 @@ var CoreLights = () => {
     return state.deletedLightKey;
   });
   const ambientLight = useAmbientStore().AmbientLight;
+  const getMesh = useRegisterMeshStore((state) => {
+    return state.getMesh;
+  });
   const keys = lights.map((light) => light.key);
   const helper = useLightHelper();
   const lightsRef = useRef([]);
@@ -296,6 +322,7 @@ var CoreLights = () => {
                 light.position.y,
                 light.position.z
               ],
+              target: getMesh(light.target.toLowerCase()),
               castShadow: light.shadow
             },
             light.key
@@ -349,6 +376,7 @@ var CoreLights = () => {
                 light.position.y,
                 light.position.z
               ],
+              target: getMesh(light.target.toLowerCase()),
               penumbra: light.penumbra,
               angle: light.angle,
               distance: light.distance,
@@ -479,6 +507,15 @@ var useLuxel = (preset) => {
   useFactoryGui();
   return CoreCanvas;
 };
+
+// src/useRegisterMesh.ts
+var useRegisterMesh = (mesh, ref) => {
+  const registerMesh = useRegisterMeshStore((state) => {
+    return state.registerMesh;
+  });
+  registerMesh(mesh, ref.toLowerCase());
+};
 export {
-  useLuxel
+  useLuxel,
+  useRegisterMesh
 };

@@ -18,7 +18,7 @@ export interface HemisphereLight extends MainLight {
 
 export interface DirectionalLight extends MainLight {
   position: { x: number; y: number; z: number };
-  target: { x: number; y: number; z: number };
+  target: string;
   shadow: boolean;
   lightType: "directional";
 }
@@ -37,7 +37,7 @@ export interface SpotLight extends MainLight {
   penumbra: number;
   position: { x: number; y: number; z: number };
   shadow: boolean;
-  target: { x: number; y: number; z: number };
+  target: string;
   lightType: "spot";
 }
 

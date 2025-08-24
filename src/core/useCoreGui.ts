@@ -35,7 +35,7 @@ export const useCoreGui = () => {
     ...PARAMS,
     lightType: "directional",
     position: { x: 3, y: 3, z: 3 },
-    target: { x: 0, y: 0, z: 0 },
+    target: "",
     shadow: false,
   };
 
@@ -56,7 +56,7 @@ export const useCoreGui = () => {
     penumbra: 1,
     position: { x: 3, y: 3, z: 3 },
     shadow: false,
-    target: { x: 0, y: 3, z: 3 },
+    target: "",
   };
   const addLight = useLightStore((state: { addLights: any }) => {
     return state.addLights;

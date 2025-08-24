@@ -5,14 +5,14 @@ import { OrbitControls } from "@react-three/drei";
 import { useLuxel } from "luxel";
 
 function App() {
-  const Lux = useLuxel("tests");
+  const Luxel = useLuxel("tests");
 
   return (
     <div className="render">
-      <Lux>
+      <Luxel shadows>
         <OrbitControls enableDamping={false} />
         <Renderer />
-      </Lux>
+      </Luxel>
     </div>
   );
 }

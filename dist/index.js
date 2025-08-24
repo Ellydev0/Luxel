@@ -30,7 +30,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
-  useLuxel: () => useLuxel
+  useLuxel: () => useLuxel,
+  useRegisterMesh: () => useRegisterMesh
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -80,7 +81,7 @@ var useCoreGui = () => {
     ...PARAMS,
     lightType: "directional",
     position: { x: 3, y: 3, z: 3 },
-    target: { x: 0, y: 0, z: 0 },
+    target: "",
     shadow: false
   };
   const Point = {
@@ -100,12 +101,12 @@ var useCoreGui = () => {
     penumbra: 1,
     position: { x: 3, y: 3, z: 3 },
     shadow: false,
-    target: { x: 0, y: 3, z: 3 }
+    target: ""
   };
   const addLight = useLightStore((state) => {
     return state.addLights;
   });
-  const create4 = () => {
+  const create5 = () => {
     const defaultPane = new import_tweakpane.Pane({
       title: "Create Light"
     });
@@ -147,7 +148,7 @@ var useCoreGui = () => {
     return defaultPane;
   };
   (0, import_react.useEffect)(() => {
-    const pane = create4();
+    const pane = create5();
     return () => {
       pane.dispose();
     };
@@ -277,6 +278,29 @@ var useAmbientStore = (0, import_zustand3.create)()((set) => ({
   }))
 }));
 
+// src/stores/RegisterMeshStore.ts
+var import_zustand4 = require("zustand");
+var THREE2 = __toESM(require("three"));
+var useRegisterMeshStore = (0, import_zustand4.create)()((set, get) => ({
+  mesh: {},
+  registerMesh: (obj, ref) => {
+    set((state) => ({
+      mesh: {
+        ...state.mesh,
+        [ref]: obj
+      }
+    }));
+  },
+  getMesh: (ref) => {
+    const res = get().mesh[ref];
+    if (res) {
+      return res;
+    } else {
+      return new THREE2.Object3D();
+    }
+  }
+}));
+
 // src/core/CoreLights.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var CoreLights = () => {
@@ -287,6 +311,9 @@ var CoreLights = () => {
     return state.deletedLightKey;
   });
   const ambientLight = useAmbientStore().AmbientLight;
+  const getMesh = useRegisterMeshStore((state) => {
+    return state.getMesh;
+  });
   const keys = lights.map((light) => light.key);
   const helper = useLightHelper();
   const lightsRef = (0, import_react3.useRef)([]);
@@ -332,6 +359,7 @@ var CoreLights = () => {
                 light.position.y,
                 light.position.z
               ],
+              target: getMesh(light.target.toLowerCase()),
               castShadow: light.shadow
             },
             light.key
@@ -385,6 +413,7 @@ var CoreLights = () => {
                 light.position.y,
                 light.position.z
               ],
+              target: getMesh(light.target.toLowerCase()),
               penumbra: light.penumbra,
               angle: light.angle,
               distance: light.distance,
@@ -515,7 +544,16 @@ var useLuxel = (preset) => {
   useFactoryGui();
   return CoreCanvas;
 };
+
+// src/useRegisterMesh.ts
+var useRegisterMesh = (mesh, ref) => {
+  const registerMesh = useRegisterMeshStore((state) => {
+    return state.registerMesh;
+  });
+  registerMesh(mesh, ref.toLowerCase());
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  useLuxel
+  useLuxel,
+  useRegisterMesh
 });

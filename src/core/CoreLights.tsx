@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useLightHelper } from "./useLightHelper";
 import { useAmbientStore } from "../stores/AmbientStore";
+import { useRegisterMeshStore } from "../stores/RegisterMeshStore";
 
 export const CoreLights = () => {
   const lights = useLightStore((state) => {
@@ -14,6 +15,10 @@ export const CoreLights = () => {
   });
 
   const ambientLight = useAmbientStore().AmbientLight;
+
+  const getMesh = useRegisterMeshStore((state) => {
+    return state.getMesh;
+  });
 
   const keys = lights.map((light) => light.key);
 
@@ -64,6 +69,7 @@ export const CoreLights = () => {
                   light.position.y,
                   light.position.z,
                 ]}
+                target={getMesh(light.target.toLowerCase())}
                 castShadow={light.shadow}
               ></directionalLight>
             );
@@ -117,6 +123,7 @@ export const CoreLights = () => {
                   light.position.y,
                   light.position.z,
                 ]}
+                target={getMesh(light.target.toLowerCase())}
                 penumbra={light.penumbra}
                 angle={light.angle}
                 distance={light.distance}

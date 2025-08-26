@@ -20,11 +20,87 @@ var useLightStore = create()((set) => ({
   })),
   setDeleteKey: (key) => set((state) => ({
     deletedLightKey: state.deletedLightKey = key
+  })),
+  resetLight: () => set((state) => ({
+    lights: []
   }))
 }));
 
 // src/core/useCoreGui.ts
 import { useEffect } from "react";
+
+// src/storage/useUpdatePreset.ts
+import { useCallback, useRef } from "react";
+
+// src/stores/PresetStore.ts
+import { create as create2 } from "zustand";
+var usePresetStore = create2()((set) => ({
+  preset: "",
+  setPreset: (newPreset) => set(() => ({
+    preset: newPreset
+  }))
+}));
+
+// src/storage/useUpdatePreset.ts
+var useUpdatePreset = () => {
+  const timeoutRef = useRef(null);
+  const preset = usePresetStore((state) => {
+    return state.preset;
+  });
+  const delay = 300;
+  const add = (light) => {
+    const currentData = JSON.parse(
+      localStorage.getItem(preset)
+    );
+    currentData.push(light);
+    localStorage.setItem(preset, JSON.stringify(currentData));
+  };
+  const update = useCallback(
+    (key, newProps) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        try {
+          const currentData = JSON.parse(
+            localStorage.getItem(preset)
+          );
+          const newData = currentData.map(
+            (light) => light.key === key ? { ...light, ...newProps } : light
+          );
+          localStorage.setItem(preset, JSON.stringify(newData));
+        } catch (err) {
+          console.error(err, "Failed");
+        }
+      }, delay);
+    },
+    [preset, delay]
+  );
+  const updateAmbient = useCallback(
+    (newProps) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        try {
+          const currentData = JSON.parse(
+            localStorage.getItem(preset)
+          );
+          const newData = currentData.map(
+            (light) => light.type === "ambient" ? { ...light, ...newProps } : light
+          );
+          localStorage.setItem(preset, JSON.stringify(newData));
+        } catch (err) {
+          console.error(err, "Failed");
+        }
+      }, delay);
+    },
+    [preset, delay]
+  );
+  return { add, update, updateAmbient };
+};
+
+// src/core/useCoreGui.ts
 var PARAMS = {
   // prop lightType and type have their purposes
   key: uid(3),
@@ -69,7 +145,8 @@ var useCoreGui = () => {
   const addLight = useLightStore((state) => {
     return state.addLights;
   });
-  const create5 = () => {
+  const { add } = useUpdatePreset();
+  const create6 = () => {
     const defaultPane = new Pane({
       title: "Create Light"
     });
@@ -107,11 +184,12 @@ var useCoreGui = () => {
         lightObj = { ...Spot, ...PARAMS };
       }
       addLight(lightObj);
+      add(lightObj);
     });
     return defaultPane;
   };
   useEffect(() => {
-    const pane = create5();
+    const pane = create6();
     return () => {
       pane.dispose();
     };
@@ -122,15 +200,15 @@ var useCoreGui = () => {
 import { Canvas } from "@react-three/fiber";
 
 // src/core/CoreLights.tsx
-import { useEffect as useEffect3, useRef } from "react";
+import { useEffect as useEffect3, useRef as useRef2 } from "react";
 
 // src/core/useLightHelper.ts
 import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
 
 // src/stores/HelperStore.ts
-import { create as create2 } from "zustand";
-var useHelperStore = create2()((set) => ({
+import { create as create3 } from "zustand";
+var useHelperStore = create3()((set) => ({
   helperArr: [],
   selectedLight: "",
   scene: {},
@@ -233,8 +311,8 @@ function useLightHelper() {
 }
 
 // src/stores/AmbientStore.ts
-import { create as create3 } from "zustand";
-var useAmbientStore = create3()((set) => ({
+import { create as create4 } from "zustand";
+var useAmbientStore = create4()((set) => ({
   AmbientLight: {},
   updateAmbientLights: (newProps) => set((state) => ({
     AmbientLight: { ...state.AmbientLight, ...newProps }
@@ -242,9 +320,9 @@ var useAmbientStore = create3()((set) => ({
 }));
 
 // src/stores/RegisterMeshStore.ts
-import { create as create4 } from "zustand";
+import { create as create5 } from "zustand";
 import * as THREE2 from "three";
-var useRegisterMeshStore = create4()((set, get) => ({
+var useRegisterMeshStore = create5()((set, get) => ({
   mesh: {},
   registerMesh: (obj, ref) => {
     set((state) => ({
@@ -279,7 +357,7 @@ var CoreLights = () => {
   });
   const keys = lights.map((light) => light.key);
   const helper = useLightHelper();
-  const lightsRef = useRef([]);
+  const lightsRef = useRef2([]);
   const trackLightsRef = (el) => {
     if (el) {
       if (!lightsRef.current.some((light) => light.uuid === el.uuid)) {
@@ -410,13 +488,32 @@ var CoreCanvas = ({ children, ...props }) => {
 // src/factory/useFactoryGui.ts
 import { Pane as Pane2 } from "tweakpane";
 import { useEffect as useEffect4 } from "react";
+
+// src/storage/useDeletePreset.ts
+var useDeletePreset = () => {
+  const preset = usePresetStore((state) => {
+    return state.preset;
+  });
+  return (key) => {
+    const currentData = JSON.parse(
+      localStorage.getItem(preset)
+    );
+    const newData = currentData.filter((light) => light.key !== key);
+    localStorage.setItem(preset, JSON.stringify(newData));
+  };
+};
+
+// src/factory/useFactoryGui.ts
 var useFactoryGui = () => {
   const updateAmbientLights = useAmbientStore((state) => {
     return state.updateAmbientLights;
   });
+  const ambient = useAmbientStore((state) => {
+    return state.AmbientLight;
+  });
   const AmbientLight = {
-    color: "#ffffff",
-    intensity: 0
+    color: ambient.color ? ambient.color : "#ffffff",
+    intensity: ambient.intensity ? ambient.intensity : 0
   };
   const lightKey = useHelperStore((state) => {
     return state.selectedLight;
@@ -447,6 +544,8 @@ var useFactoryGui = () => {
   const setDeleteKey = useLightStore((state) => {
     return state.setDeleteKey;
   });
+  const { update, updateAmbient } = useUpdatePreset();
+  const deleteStorage = useDeletePreset();
   const factory = new Pane2();
   const folder = factory.addTab({
     pages: [
@@ -462,6 +561,7 @@ var useFactoryGui = () => {
       if (key !== "name" && key !== "key" && key !== "lightType" && key !== "type") {
         folder.pages[0]?.addBinding(SelectedLight, key).on("change", (ev) => {
           updateLights(SelectedLight.key, { [key]: ev.value });
+          update(SelectedLight.key, { [key]: ev.value });
         });
       }
     });
@@ -470,6 +570,7 @@ var useFactoryGui = () => {
     }).on("click", () => {
       deleteLights(lightKey);
       setDeleteKey(lightKey);
+      deleteStorage(lightKey);
       const helper = helperArr.filter((helper2) => {
         if (helper2.userData.key === lightKey) {
           return helper2;
@@ -487,22 +588,76 @@ var useFactoryGui = () => {
   }, [lightKey, helperArr]);
   folder.pages[1]?.addBinding(AmbientLight, "color").on("change", (ev) => {
     if (ev.value) updateAmbientLights({ color: ev.value });
+    updateAmbient({ color: ev.value });
   });
   folder.pages[1]?.addBinding(AmbientLight, "intensity", {
     step: 0.01
   }).on("change", (ev) => {
     if (ev.value) updateAmbientLights({ intensity: ev.value });
+    updateAmbient({ intensity: ev.value });
   });
   folder.pages[1]?.addButton({
     title: "Reset AmbientLight"
   }).on("click", () => {
     AmbientLight.intensity = 0;
+    AmbientLight.color = "#ffffff";
     updateAmbientLights({ intensity: 0 });
+    updateAmbient({ intensity: 0, color: "#ffffff" });
   });
+};
+
+// src/storage/useLoadPreset.ts
+import { useEffect as useEffect5, useState } from "react";
+var useLoadPreset = (preset) => {
+  const addLights = useLightStore((state) => {
+    return state.addLights;
+  });
+  const resetLights = useLightStore((state) => {
+    return state.resetLight;
+  });
+  const updateAmbientLights = useAmbientStore((state) => {
+    return state.updateAmbientLights;
+  });
+  const setPreset = usePresetStore((state) => {
+    return state.setPreset;
+  });
+  const [data, setData] = useState([
+    {
+      color: "#ffffff",
+      intensity: 0,
+      lightType: "ambient",
+      type: "ambient"
+    }
+  ]);
+  useEffect5(() => {
+    const storedPreset = localStorage.getItem(preset);
+    setPreset(preset);
+    if (storedPreset) {
+      try {
+        const parsedPreset = JSON.parse(storedPreset);
+        setData(parsedPreset);
+        resetLights();
+        parsedPreset.map((light) => {
+          if (light.lightType !== "ambient") {
+            addLights(light);
+          } else {
+            updateAmbientLights(light);
+          }
+        });
+      } catch (err) {
+        console.error(err, "Invalid JSON string passed to be parsed", preset);
+      }
+    } else {
+      console.log(data);
+      const defaultData = JSON.stringify(data);
+      localStorage.setItem(preset, defaultData);
+    }
+  }, [preset]);
 };
 
 // src/useLuxel.ts
 var useLuxel = (preset) => {
+  useLoadPreset(preset);
   useCoreGui();
   useFactoryGui();
   return CoreCanvas;

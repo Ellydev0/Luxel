@@ -37,6 +37,7 @@ export const CoreLights = () => {
     }
   };
 
+  //deletes the light ref
   useEffect(() => {
     if (deletedLightKey !== "") {
       lightsRef.current = lightsRef.current.filter((light) => {
@@ -46,7 +47,6 @@ export const CoreLights = () => {
       });
     }
   });
-
   return (
     <>
       <ambientLight

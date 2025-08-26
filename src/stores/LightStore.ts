@@ -7,7 +7,7 @@ import { Lights } from "../types/main"; // Enum or union of light type names
 import { LightData, LightPropsMap } from "../types/lights";
 
 type LightStore = {
-  lights: LightData[]; //contain any type of
+  lights: LightData[]; //contain any type of light
   deletedLightKey: string;
 
   updateLights: <T extends Lights>(
@@ -17,6 +17,7 @@ type LightStore = {
   addLights: <T extends Lights>(props: LightPropsMap[T]) => void;
   deleteLight: (id: string) => void;
   setDeleteKey: (key: string) => void;
+  resetLight: () => void;
 };
 
 export const useLightStore = create<LightStore>()((set) => ({
@@ -44,5 +45,10 @@ export const useLightStore = create<LightStore>()((set) => ({
   setDeleteKey: (key) =>
     set((state) => ({
       deletedLightKey: (state.deletedLightKey = key),
+    })),
+
+  resetLight: () =>
+    set((state) => ({
+      lights: [],
     })),
 }));

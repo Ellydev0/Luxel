@@ -13,6 +13,7 @@ import {
 } from "../types/lights";
 import { useLightStore } from "../stores/LightStore";
 import { useEffect } from "react";
+import { useUpdatePreset } from "../storage/useUpdatePreset";
 
 const PARAMS: MainLight = {
   // prop lightType and type have their purposes
@@ -23,6 +24,9 @@ const PARAMS: MainLight = {
   intensity: 1,
 };
 export const useCoreGui = () => {
+  /**
+   * This hook creates a tweakpane gui that provides blades to create a light and prepare the data for zustand
+   */
   const Hemisphere: HemisphereLight = {
     ...PARAMS,
     position: { x: 0, y: 0, z: 0 },
@@ -61,6 +65,7 @@ export const useCoreGui = () => {
   const addLight = useLightStore((state: { addLights: any }) => {
     return state.addLights;
   });
+  const { add } = useUpdatePreset() as any;
 
   //A function that creates the luxel core gui
   const create = () => {
@@ -92,7 +97,7 @@ export const useCoreGui = () => {
       },
     });
 
-    // a button that stores light data to zustand, and calls the useCore hook to create a light component
+    // a button that stores light data to zustand
 
     let lightObj = {} as MainLight;
     defaultPane
@@ -112,6 +117,7 @@ export const useCoreGui = () => {
           lightObj = { ...Spot, ...PARAMS };
         }
         addLight(lightObj); // sends light data to zustand
+        add(lightObj);
       });
 
     return defaultPane;

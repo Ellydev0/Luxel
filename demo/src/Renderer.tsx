@@ -10,7 +10,7 @@ const Renderer = () => {
 
   return (
     <>
-      <mesh castShadow receiveShadow ref={box} position={[2, 2, -2]}>
+      <mesh castShadow receiveShadow ref={box} position={[0, 0, 0]}>
         <boxGeometry />
         <meshStandardMaterial color={"white"} />
       </mesh>

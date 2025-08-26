@@ -4,6 +4,7 @@
  */
 import { create } from "zustand";
 import { AmbientLight } from "../types/lights";
+import { uid } from "uid";
 
 type AmbientStore = {
   AmbientLight: AmbientLight; //contain any type of

@@ -2,6 +2,11 @@ import * as react from 'react';
 import * as _react_three_fiber from '@react-three/fiber';
 import * as THREE from 'three';
 
+/**
+ * This is the main hook, it accepts a preset as a string and a r3f canvas component
+ * @param preset
+ * @returs FC<CanvasProps>
+ */
 declare const useLuxel: (preset: string) => react.FC<_react_three_fiber.CanvasProps>;
 
 /**

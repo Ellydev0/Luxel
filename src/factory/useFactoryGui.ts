@@ -8,20 +8,24 @@ import { useLightStore } from "../stores/LightStore";
 import { AmbientLight, LightData } from "../types/lights";
 import { useEffect } from "react";
 import { useAmbientStore } from "../stores/AmbientStore";
+import { useUpdatePreset } from "../storage/useUpdatePreset";
+import { useDeletePreset } from "../storage/useDeletePreset";
 
 export const useFactoryGui = () => {
   /**
-   * Zustand states
-   */
-  /**
-   * AmbientLight objects and other stuffs
+   * This hook creates a different tweakpane gui for the configuration of lights already in the scene
    */
   const updateAmbientLights = useAmbientStore((state) => {
     return state.updateAmbientLights;
   });
+
+  const ambient = useAmbientStore((state) => {
+    return state.AmbientLight;
+  });
+
   const AmbientLight: Partial<AmbientLight> = {
-    color: "#ffffff",
-    intensity: 0,
+    color: ambient.color ? ambient.color : "#ffffff",
+    intensity: ambient.intensity ? ambient.intensity : 0,
   };
 
   const lightKey = useHelperStore((state) => {
@@ -58,6 +62,10 @@ export const useFactoryGui = () => {
     return state.setDeleteKey;
   });
 
+  const { update, updateAmbient } = useUpdatePreset();
+
+  const deleteStorage = useDeletePreset();
+
   const factory = new Pane();
   const folder = factory.addTab({
     pages: [
@@ -65,14 +73,6 @@ export const useFactoryGui = () => {
       { title: "AmbientLight Settings" },
     ],
   });
-
-  // const folder = factory.addFolder({
-  //   title: `Name:${SelectedLight?.name}`,
-  // });
-
-  // const folder1 = factory.addFolder({
-  //   title: "AmbientLight Settings",
-  // });
 
   useEffect(() => {
     if (!SelectedLight) {
@@ -87,7 +87,8 @@ export const useFactoryGui = () => {
         key !== "type"
       ) {
         folder.pages[0]?.addBinding(SelectedLight, key).on("change", (ev) => {
-          updateLights(SelectedLight.key, { [key]: ev.value });
+          updateLights(SelectedLight.key, { [key]: ev.value }); //updates zustand states
+          update(SelectedLight.key, { [key]: ev.value }); //updates local storage
         });
       }
     });
@@ -98,14 +99,15 @@ export const useFactoryGui = () => {
       .on("click", () => {
         deleteLights(lightKey);
         setDeleteKey(lightKey);
+        deleteStorage(lightKey);
 
+        //deleting helpers
         const helper = helperArr.filter((helper) => {
           if (helper.userData.key === lightKey) {
             return helper;
           }
         });
 
-        //deleting helpers
         if (helper[0]) {
           (helper as any)[0].dispose();
           scene.remove(helper[0]);
@@ -119,6 +121,7 @@ export const useFactoryGui = () => {
 
   folder.pages[1]?.addBinding(AmbientLight, "color").on("change", (ev) => {
     if (ev.value) updateAmbientLights({ color: ev.value });
+    updateAmbient({ color: ev.value as string });
   });
   folder.pages[1]
     ?.addBinding(AmbientLight, "intensity", {
@@ -126,6 +129,7 @@ export const useFactoryGui = () => {
     })
     .on("change", (ev) => {
       if (ev.value) updateAmbientLights({ intensity: ev.value });
+      updateAmbient({ intensity: ev.value as number });
     });
   folder.pages[1]
     ?.addButton({
@@ -133,7 +137,9 @@ export const useFactoryGui = () => {
     })
     .on("click", () => {
       AmbientLight.intensity = 0;
+      AmbientLight.color = "#ffffff";
 
       updateAmbientLights({ intensity: 0 });
+      updateAmbient({ intensity: 0, color: "#ffffff" });
     });
 };

@@ -12,8 +12,9 @@ import {
   SpotLight,
 } from "../types/lights";
 import { useLightStore } from "../stores/LightStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useUpdatePreset } from "../storage/useUpdatePreset";
+import { useExport } from "../export/useExport";
 
 const PARAMS: MainLight = {
   // prop lightType and type have their purposes
@@ -23,10 +24,10 @@ const PARAMS: MainLight = {
   color: "#ffffff",
   intensity: 1,
 };
+/**
+ * This hook creates a tweakpane gui that provides blades to create a light and prepare the data for zustand
+ */
 export const useCoreGui = () => {
-  /**
-   * This hook creates a tweakpane gui that provides blades to create a light and prepare the data for zustand
-   */
   const Hemisphere: HemisphereLight = {
     ...PARAMS,
     position: { x: 0, y: 0, z: 0 },
@@ -62,33 +63,61 @@ export const useCoreGui = () => {
     shadow: false,
     target: "",
   };
+
+  /**
+   * EXPORT TAB
+   */
+  interface EXPORT_PARAMS {
+    FileName: string;
+    FileType: "tsx" | "jsx";
+  }
+
+  const exportParams = useRef<EXPORT_PARAMS>({
+    FileName: "Luxel",
+    FileType: "tsx",
+  });
+
+  const EXPORT: EXPORT_PARAMS = {
+    FileName: "Luxel",
+    FileType: "tsx",
+  };
+
+  const exportLights = useExport();
+
+  /**
+   * LIGHTS
+   */
   const addLight = useLightStore((state: { addLights: any }) => {
     return state.addLights;
   });
   const { add } = useUpdatePreset() as any;
 
   //A function that creates the luxel core gui
-  const create = () => {
-    const defaultPane = new Pane({
-      title: "Create Light",
-    });
 
+  const create = () => {
+    const defaultPane = new Pane();
+
+    //styles
     defaultPane.element.style.position = "absolute";
     defaultPane.element.style.right = "80.5vw";
     defaultPane.element.style.width = "100%";
 
+    const tab = defaultPane.addTab({
+      pages: [{ title: "Create Light" }, { title: "Export" }],
+    });
+
     //GUI for the main light props
-    defaultPane.addBinding(PARAMS, "name");
+    tab.pages[0]?.addBinding(PARAMS, "name");
 
-    defaultPane.addBinding(PARAMS, "color");
+    tab.pages[0]?.addBinding(PARAMS, "color");
 
-    defaultPane.addBinding(PARAMS, "intensity", {
+    tab.pages[0]?.addBinding(PARAMS, "intensity", {
       min: 0,
       max: 10,
       step: 0.1,
     });
 
-    defaultPane.addBinding(PARAMS, "type", {
+    tab.pages[0]?.addBinding(PARAMS, "type", {
       options: {
         DirectionalLight: "directional",
         PointLight: "point",
@@ -100,8 +129,9 @@ export const useCoreGui = () => {
     // a button that stores light data to zustand
 
     let lightObj = {} as MainLight;
-    defaultPane
-      .addButton({
+
+    tab.pages[0]
+      ?.addButton({
         title: "Create",
         label: "Create Light",
       })
@@ -118,6 +148,38 @@ export const useCoreGui = () => {
         }
         addLight(lightObj); // sends light data to zustand
         add(lightObj);
+      });
+
+    /**
+     * EXPORT TAB
+     */
+    tab.pages[1]?.addBinding(EXPORT, "FileName").on("change", (ev) => {
+      exportParams.current.FileName = ev.value;
+    });
+
+    tab.pages[1]
+      ?.addBinding(EXPORT, "FileType", {
+        options: {
+          TSX: "tsx",
+          JSX: "jsx",
+        },
+      })
+      .on("change", (ev) => {
+        exportParams.current.FileType = ev.value;
+        console.log(exportParams.current.FileType);
+      });
+
+    tab.pages[1]
+      ?.addButton({
+        title: "Export",
+        label: "Export",
+      })
+      .on("click", (ev) => {
+        const str = exportLights(
+          exportParams.current.FileName,
+          exportParams.current.FileType
+        );
+        console.log(str);
       });
 
     return defaultPane;

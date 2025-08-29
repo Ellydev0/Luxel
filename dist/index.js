@@ -137,6 +137,155 @@ var useUpdatePreset = () => {
   return { add, update, updateAmbient };
 };
 
+// src/stores/RegisterMeshStore.ts
+var import_zustand3 = require("zustand");
+var THREE = __toESM(require("three"));
+var useRegisterMeshStore = (0, import_zustand3.create)()((set, get) => ({
+  mesh: {},
+  registerMesh: (obj, ref) => {
+    set((state) => ({
+      mesh: {
+        ...state.mesh,
+        [ref]: obj
+      }
+    }));
+  },
+  getMesh: (ref, exporting = false) => {
+    const res = get().mesh[ref];
+    if (!exporting) {
+      if (res) {
+        return res;
+      } else {
+        return new THREE.Object3D();
+      }
+    } else {
+      if (res) {
+        return `[${res.position.x},${res.position.y},${res.position.z}]
+        `;
+      } else {
+        return `[0,0,0]`;
+      }
+    }
+  }
+}));
+
+// src/export/download.ts
+var download = (fileName, content) => {
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+// src/export/useExport.ts
+var useExport = () => {
+  const lights = useLightStore((state) => {
+    return state.lights;
+  });
+  const getMesh = useRegisterMeshStore((state) => {
+    return state.getMesh;
+  });
+  const imports = `
+   import { Canvas, type CanvasProps } from "@react-three/fiber";
+   import type { FC } from "react";
+   import * as THREE from "three";
+
+    `;
+  return (name, extension) => {
+    const lightElements = lights.map((light) => {
+      switch (light.lightType) {
+        case "directional":
+          return `<directionalLight
+                key={"${light.key}"}
+                name={"${light.name}"}
+                color={"${light.color}"}
+                intensity={${light.intensity}}
+                position={[
+                  ${light.position.x},
+                 ${light.position.y},
+                  ${light.position.z},
+                ]}
+                target={targetObj(${getMesh(light.target.toLowerCase(), true)})}
+                castShadow={${light.shadow}}
+              ></directionalLight>`;
+        case "hemisphere":
+          return ` <hemisphereLight
+                key={"${light.key}"}
+                name={"${light.name}"}
+                color={"${light.color}"}
+                intensity={${light.intensity}}
+                position={[
+                  ${light.position.x},
+                 ${light.position.y},
+                  ${light.position.z},
+                ]}
+                groundColor={${light.groundColor}}
+              />`;
+        case "point":
+          return ` <pointLight
+                 key={"${light.key}"}
+                name={"${light.name}"}
+                color={"${light.color}"}
+                intensity={${light.intensity}}
+                position={[
+                  ${light.position.x},
+                 ${light.position.y},
+                  ${light.position.z},
+                ]}
+                castShadow={${light.shadow}}
+                distance={${light.distance}}
+                decay={${light.decay}}
+              />`;
+        case "spot":
+          return `<spotLight
+                key={"${light.key}"}
+                name={"${light.name}"}
+                color={"${light.color}"}
+                intensity={${light.intensity}}
+                position={[
+                  ${light.position.x},
+                 ${light.position.y},
+                  ${light.position.z},
+                ]}
+                target={targetObj(${getMesh(light.target.toLowerCase(), true)})}
+                castShadow={${light.shadow}}
+                penumbra={${light.penumbra}}
+                angle={${light.angle}}
+                distance={${light.distance}}
+              ></spotLight>`;
+      }
+    }).join("\n");
+    const content = `${imports}
+    export const ${name.charAt(0).toUpperCase() + name.slice(1)}: FC<CanvasProps> = ({ children, ...props }) => {
+
+    const targetObj = (pos: [number, number, number]) => {
+    const obj = new THREE.Object3D();
+    obj.position.set(...pos);
+    return obj;
+  };
+        return (
+        <>
+        <Canvas {...props}
+      style={{
+        position: "relative",
+      }}>
+            ${lightElements}
+            {children}
+        </Canvas>
+        </>
+        )
+    }
+    `;
+    download(
+      name.charAt(0).toUpperCase() + name.slice(1) + "." + extension,
+      content
+    );
+  };
+};
+
 // src/core/useCoreGui.ts
 var PARAMS = {
   // prop lightType and type have their purposes
@@ -179,25 +328,35 @@ var useCoreGui = () => {
     shadow: false,
     target: ""
   };
+  const exportParams = (0, import_react2.useRef)({
+    FileName: "Luxel",
+    FileType: "tsx"
+  });
+  const EXPORT = {
+    FileName: "Luxel",
+    FileType: "tsx"
+  };
+  const exportLights = useExport();
   const addLight = useLightStore((state) => {
     return state.addLights;
   });
   const { add } = useUpdatePreset();
   const create6 = () => {
-    const defaultPane = new import_tweakpane.Pane({
-      title: "Create Light"
-    });
+    const defaultPane = new import_tweakpane.Pane();
     defaultPane.element.style.position = "absolute";
     defaultPane.element.style.right = "80.5vw";
     defaultPane.element.style.width = "100%";
-    defaultPane.addBinding(PARAMS, "name");
-    defaultPane.addBinding(PARAMS, "color");
-    defaultPane.addBinding(PARAMS, "intensity", {
+    const tab = defaultPane.addTab({
+      pages: [{ title: "Create Light" }, { title: "Export" }]
+    });
+    tab.pages[0]?.addBinding(PARAMS, "name");
+    tab.pages[0]?.addBinding(PARAMS, "color");
+    tab.pages[0]?.addBinding(PARAMS, "intensity", {
       min: 0,
       max: 10,
       step: 0.1
     });
-    defaultPane.addBinding(PARAMS, "type", {
+    tab.pages[0]?.addBinding(PARAMS, "type", {
       options: {
         DirectionalLight: "directional",
         PointLight: "point",
@@ -206,7 +365,7 @@ var useCoreGui = () => {
       }
     });
     let lightObj = {};
-    defaultPane.addButton({
+    tab.pages[0]?.addButton({
       title: "Create",
       label: "Create Light"
     }).on("click", () => {
@@ -222,6 +381,28 @@ var useCoreGui = () => {
       }
       addLight(lightObj);
       add(lightObj);
+    });
+    tab.pages[1]?.addBinding(EXPORT, "FileName").on("change", (ev) => {
+      exportParams.current.FileName = ev.value;
+    });
+    tab.pages[1]?.addBinding(EXPORT, "FileType", {
+      options: {
+        TSX: "tsx",
+        JSX: "jsx"
+      }
+    }).on("change", (ev) => {
+      exportParams.current.FileType = ev.value;
+      console.log(exportParams.current.FileType);
+    });
+    tab.pages[1]?.addButton({
+      title: "Export",
+      label: "Export"
+    }).on("click", (ev) => {
+      const str = exportLights(
+        exportParams.current.FileName,
+        exportParams.current.FileType
+      );
+      console.log(str);
     });
     return defaultPane;
   };
@@ -240,12 +421,12 @@ var import_fiber2 = require("@react-three/fiber");
 var import_react4 = require("react");
 
 // src/core/useLightHelper.ts
-var THREE = __toESM(require("three"));
+var THREE2 = __toESM(require("three"));
 var import_fiber = require("@react-three/fiber");
 
 // src/stores/HelperStore.ts
-var import_zustand3 = require("zustand");
-var useHelperStore = (0, import_zustand3.create)()((set) => ({
+var import_zustand4 = require("zustand");
+var useHelperStore = (0, import_zustand4.create)()((set) => ({
   helperArr: [],
   selectedLight: "",
   scene: {},
@@ -262,8 +443,8 @@ var useHelperStore = (0, import_zustand3.create)()((set) => ({
 // src/core/useLightHelper.ts
 var import_react3 = require("react");
 function useLightHelper() {
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
+  const raycaster = new THREE2.Raycaster();
+  const pointer = new THREE2.Vector2();
   const helperArr = useHelperStore.getState().helperArr;
   const addHelper = useHelperStore.getState().addHelper;
   const deleteHelpers = useHelperStore.getState().deleteHelpers;
@@ -300,28 +481,28 @@ function useLightHelper() {
       if (light) {
         switch (light.type) {
           case "DirectionalLight":
-            helper = new THREE.DirectionalLightHelper(
+            helper = new THREE2.DirectionalLightHelper(
               light,
               size
             );
             helper.userData = { key: key[idx], isHelper: true };
             break;
           case "HemisphereLight":
-            helper = new THREE.HemisphereLightHelper(
+            helper = new THREE2.HemisphereLightHelper(
               light,
               size
             );
             helper.userData = { key: key[idx], isHelper: true };
             break;
           case "PointLight":
-            helper = new THREE.PointLightHelper(
+            helper = new THREE2.PointLightHelper(
               light,
               size
             );
             helper.userData = { key: key[idx], isHelper: true };
             break;
           case "SpotLight":
-            helper = new THREE.SpotLightHelper(light);
+            helper = new THREE2.SpotLightHelper(light);
             helper.userData = { key: key[idx], isHelper: true };
         }
       }
@@ -348,35 +529,12 @@ function useLightHelper() {
 }
 
 // src/stores/AmbientStore.ts
-var import_zustand4 = require("zustand");
-var useAmbientStore = (0, import_zustand4.create)()((set) => ({
+var import_zustand5 = require("zustand");
+var useAmbientStore = (0, import_zustand5.create)()((set) => ({
   AmbientLight: {},
   updateAmbientLights: (newProps) => set((state) => ({
     AmbientLight: { ...state.AmbientLight, ...newProps }
   }))
-}));
-
-// src/stores/RegisterMeshStore.ts
-var import_zustand5 = require("zustand");
-var THREE2 = __toESM(require("three"));
-var useRegisterMeshStore = (0, import_zustand5.create)()((set, get) => ({
-  mesh: {},
-  registerMesh: (obj, ref) => {
-    set((state) => ({
-      mesh: {
-        ...state.mesh,
-        [ref]: obj
-      }
-    }));
-  },
-  getMesh: (ref) => {
-    const res = get().mesh[ref];
-    if (res) {
-      return res;
-    } else {
-      return new THREE2.Object3D();
-    }
-  }
 }));
 
 // src/core/CoreLights.tsx

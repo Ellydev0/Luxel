@@ -66,18 +66,35 @@ export const useFactoryGui = () => {
 
   const deleteStorage = useDeletePreset();
 
-  const factory = new Pane();
-  const folder = factory.addTab({
-    pages: [
-      { title: `Name:${SelectedLight?.name}` },
-      { title: "AmbientLight Settings" },
-    ],
-  });
+  const factory = new Pane({ title: `Name:${SelectedLight?.name}` });
+  factory.element.style.width = "120%";
+  factory.element.style.translate = "-20% 0%";
 
   useEffect(() => {
     if (!SelectedLight) {
       return;
     }
+
+    /**
+     * Ambient Light pane
+     */
+    factory
+      .addBinding(AmbientLight, "color", {
+        label: "AmbientLight Color",
+      })
+      .on("change", (ev) => {
+        if (ev.value) updateAmbientLights({ color: ev.value });
+        updateAmbient({ color: ev.value as string });
+      });
+    factory
+      .addBinding(AmbientLight, "intensity", {
+        step: 0.01,
+        label: "AmbientLight Intensity",
+      })
+      .on("change", (ev) => {
+        if (ev.value) updateAmbientLights({ intensity: ev.value });
+        updateAmbient({ intensity: ev.value as number });
+      });
 
     Object.keys(SelectedLight).forEach((key: any) => {
       if (
@@ -86,14 +103,14 @@ export const useFactoryGui = () => {
         key !== "lightType" &&
         key !== "type"
       ) {
-        folder.pages[0]?.addBinding(SelectedLight, key).on("change", (ev) => {
+        factory.addBinding(SelectedLight, key).on("change", (ev) => {
           updateLights(SelectedLight.key, { [key]: ev.value }); //updates zustand states
           update(SelectedLight.key, { [key]: ev.value }); //updates local storage
         });
       }
     });
-    folder.pages[0]
-      ?.addButton({
+    factory
+      .addButton({
         title: "Delete Lights",
       })
       .on("click", () => {
@@ -114,32 +131,21 @@ export const useFactoryGui = () => {
           deleteHelpers(helper[0]);
         }
       });
+
+    factory
+      .addButton({
+        title: "Reset AmbientLight",
+      })
+      .on("click", () => {
+        AmbientLight.intensity = 0;
+        AmbientLight.color = "#ffffff";
+
+        updateAmbientLights({ intensity: 0 });
+        updateAmbient({ intensity: 0, color: "#ffffff" });
+      });
+
     return () => {
       factory.dispose();
     };
   }, [lightKey, helperArr]);
-
-  folder.pages[1]?.addBinding(AmbientLight, "color").on("change", (ev) => {
-    if (ev.value) updateAmbientLights({ color: ev.value });
-    updateAmbient({ color: ev.value as string });
-  });
-  folder.pages[1]
-    ?.addBinding(AmbientLight, "intensity", {
-      step: 0.01,
-    })
-    .on("change", (ev) => {
-      if (ev.value) updateAmbientLights({ intensity: ev.value });
-      updateAmbient({ intensity: ev.value as number });
-    });
-  folder.pages[1]
-    ?.addButton({
-      title: "Reset AmbientLight",
-    })
-    .on("click", () => {
-      AmbientLight.intensity = 0;
-      AmbientLight.color = "#ffffff";
-
-      updateAmbientLights({ intensity: 0 });
-      updateAmbient({ intensity: 0, color: "#ffffff" });
-    });
 };

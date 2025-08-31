@@ -704,7 +704,9 @@ var useFactoryGui = () => {
   });
   const { update, updateAmbient } = useUpdatePreset();
   const deleteStorage = useDeletePreset();
-  const factory = new Pane2({ title: `Name:${SelectedLight?.name}` });
+  const factory = new Pane2({
+    title: `Name:${SelectedLight?.name} ID: ${SelectedLight?.key}`
+  });
   factory.element.style.width = "120%";
   factory.element.style.translate = "-20% 0%";
   useEffect4(() => {
@@ -725,10 +727,14 @@ var useFactoryGui = () => {
       updateAmbient({ intensity: ev.value });
     });
     Object.keys(SelectedLight).forEach((key) => {
-      if (key !== "name" && key !== "key" && key !== "lightType" && key !== "type") {
+      if (key !== "name" && key !== "key" && key !== "lightType" && key !== "type" && key !== "target") {
         factory.addBinding(SelectedLight, key).on("change", (ev) => {
           updateLights(SelectedLight.key, { [key]: ev.value });
           update(SelectedLight.key, { [key]: ev.value });
+        });
+      } else if (key === "target") {
+        factory.addBinding(SelectedLight, "target", {
+          options: {}
         });
       }
     });

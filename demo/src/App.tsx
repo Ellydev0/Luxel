@@ -1,7 +1,7 @@
 import "./App.css";
 // import { Luxel } from "./Luxel";
 import Renderer from "./Renderer";
-import { OrbitControls } from "@react-three/drei";
+import { Environment, OrbitControls } from "@react-three/drei";
 import { useLuxel } from "luxel";
 
 function App() {
@@ -9,8 +9,14 @@ function App() {
 
   return (
     <div className="render">
-      <Luxel shadows>
-        <OrbitControls enableDamping={false} />
+      <Luxel shadows camera={{ fov: 35, position: [7, 10, 25] }}>
+        <Environment
+          files={"./moonless_golf_1k.hdr"}
+          environmentIntensity={0.2}
+          backgroundBlurriness={0.1}
+          background
+        />
+        <OrbitControls enableDamping={false} maxPolarAngle={Math.PI / 2} />
         <Renderer />
       </Luxel>
     </div>

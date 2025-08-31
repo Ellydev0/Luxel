@@ -11,10 +11,10 @@ import { useAmbientStore } from "../stores/AmbientStore";
 import { useUpdatePreset } from "../storage/useUpdatePreset";
 import { useDeletePreset } from "../storage/useDeletePreset";
 
+/**
+ * This hook creates a different tweakpane gui for the configuration of lights already in the scene
+ */
 export const useFactoryGui = () => {
-  /**
-   * This hook creates a different tweakpane gui for the configuration of lights already in the scene
-   */
   const updateAmbientLights = useAmbientStore((state) => {
     return state.updateAmbientLights;
   });
@@ -66,7 +66,9 @@ export const useFactoryGui = () => {
 
   const deleteStorage = useDeletePreset();
 
-  const factory = new Pane({ title: `Name:${SelectedLight?.name}` });
+  const factory = new Pane({
+    title: `Name:${SelectedLight?.name} ID: ${SelectedLight?.key}`,
+  });
   factory.element.style.width = "120%";
   factory.element.style.translate = "-20% 0%";
 
@@ -96,16 +98,24 @@ export const useFactoryGui = () => {
         updateAmbient({ intensity: ev.value as number });
       });
 
+    /**
+     * Light pane
+     */
     Object.keys(SelectedLight).forEach((key: any) => {
       if (
         key !== "name" &&
         key !== "key" &&
         key !== "lightType" &&
-        key !== "type"
+        key !== "type" &&
+        key !== "target"
       ) {
         factory.addBinding(SelectedLight, key).on("change", (ev) => {
           updateLights(SelectedLight.key, { [key]: ev.value }); //updates zustand states
           update(SelectedLight.key, { [key]: ev.value }); //updates local storage
+        });
+      } else if (key === "target") {
+        factory.addBinding(SelectedLight, "target" as any, {
+          options: {},
         });
       }
     });

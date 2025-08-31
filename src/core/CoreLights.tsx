@@ -69,7 +69,7 @@ export const CoreLights = () => {
                   light.position.y,
                   light.position.z,
                 ]}
-                target={getMesh(light.target.toLowerCase())}
+                target={getMesh(light.target.toLowerCase()) as THREE.Object3D}
                 castShadow={light.shadow}
               ></directionalLight>
             );
@@ -123,7 +123,7 @@ export const CoreLights = () => {
                   light.position.y,
                   light.position.z,
                 ]}
-                target={getMesh(light.target.toLowerCase())}
+                target={getMesh(light.target.toLowerCase()) as THREE.Object3D}
                 penumbra={light.penumbra}
                 angle={light.angle}
                 distance={light.distance}

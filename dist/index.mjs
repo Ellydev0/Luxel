@@ -105,6 +105,7 @@ import { create as create3 } from "zustand";
 import * as THREE from "three";
 var useRegisterMeshStore = create3()((set, get) => ({
   mesh: {},
+  options: () => Object.fromEntries(Object.keys(get().mesh).map((k) => [k, k])),
   registerMesh: (obj, ref) => {
     set((state) => ({
       mesh: {
@@ -392,7 +393,11 @@ import { create as create4 } from "zustand";
 var useHelperStore = create4()((set) => ({
   helperArr: [],
   selectedLight: "",
+  helperScale: 1,
   scene: {},
+  setHelperScale: (scale) => set((state) => ({
+    helperScale: state.helperScale = scale
+  })),
   setSelectedLight: (key) => set((state) => ({ selectedLight: state.selectedLight = key })),
   deleteHelpers: (helper) => set((state) => ({
     helperArr: state.helperArr.filter((help) => help !== helper)
@@ -514,6 +519,9 @@ var CoreLights = () => {
     return state.getMesh;
   });
   const keys = lights.map((light) => light.key);
+  const helperScale = useHelperStore((state) => {
+    return state.helperScale;
+  });
   const helper = useLightHelper();
   const lightsRef = useRef3([]);
   const trackLightsRef = (el) => {
@@ -522,7 +530,7 @@ var CoreLights = () => {
         const len = lightsRef.current.length;
         el.userData.key = keys[len];
         lightsRef.current.push(el);
-        helper(lightsRef, keys);
+        helper(lightsRef, keys, helperScale);
       }
     }
   };
@@ -704,11 +712,14 @@ var useFactoryGui = () => {
   });
   const { update, updateAmbient } = useUpdatePreset();
   const deleteStorage = useDeletePreset();
-  const factory = new Pane2({
-    title: `Name:${SelectedLight?.name} ID: ${SelectedLight?.key}`
+  const options = useRegisterMeshStore((state) => {
+    return state.options;
   });
-  factory.element.style.width = "120%";
-  factory.element.style.translate = "-20% 0%";
+  const factory = new Pane2({
+    title: `Name:${SelectedLight?.name} ID: ${SelectedLight?.key} type:${SelectedLight?.lightType}`
+  });
+  factory.element.style.width = "150%";
+  factory.element.style.translate = "-40% 0%";
   useEffect4(() => {
     if (!SelectedLight) {
       return;
@@ -733,8 +744,11 @@ var useFactoryGui = () => {
           update(SelectedLight.key, { [key]: ev.value });
         });
       } else if (key === "target") {
-        factory.addBinding(SelectedLight, "target", {
-          options: {}
+        factory.addBinding(SelectedLight, key, {
+          options: { default: "", ...options() }
+        }).on("change", (ev) => {
+          updateLights(SelectedLight.key, { [key]: ev.value });
+          update(SelectedLight.key, { [key]: ev.value });
         });
       }
     });
@@ -819,7 +833,11 @@ var useLoadPreset = (preset) => {
 };
 
 // src/useLuxel.ts
-var useLuxel = (preset) => {
+var useLuxel = (preset, helperScale = 1) => {
+  const setHelperScale = useHelperStore((state) => {
+    return state.setHelperScale;
+  });
+  setHelperScale(helperScale);
   useLoadPreset(preset);
   useCoreGui();
   useFactoryGui();

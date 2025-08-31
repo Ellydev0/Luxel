@@ -3,11 +3,13 @@ import * as THREE from "three";
 
 type RegisterMeshStore = {
   mesh: Record<string, THREE.Object3D>;
+  options: () => Record<string, string>;
   registerMesh: (obj: THREE.Object3D, ref: string) => void;
   getMesh: (ref: string, exporting?: boolean) => THREE.Object3D | string;
 };
 export const useRegisterMeshStore = create<RegisterMeshStore>()((set, get) => ({
   mesh: {},
+  options: () => Object.fromEntries(Object.keys(get().mesh).map((k) => [k, k])),
   registerMesh: (obj, ref) => {
     set((state) => ({
       mesh: {

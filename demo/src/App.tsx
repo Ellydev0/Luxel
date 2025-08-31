@@ -5,7 +5,7 @@ import { Environment, OrbitControls } from "@react-three/drei";
 import { useLuxel } from "luxel";
 
 function App() {
-  const Luxel = useLuxel("scene1");
+  const Luxel = useLuxel("scene1", 10);
 
   return (
     <div className="render">

@@ -10,6 +10,8 @@ import { useEffect } from "react";
 import { useAmbientStore } from "../stores/AmbientStore";
 import { useUpdatePreset } from "../storage/useUpdatePreset";
 import { useDeletePreset } from "../storage/useDeletePreset";
+import { useRegisterMeshStore } from "../stores/RegisterMeshStore";
+import * as THREE from "three";
 
 /**
  * This hook creates a different tweakpane gui for the configuration of lights already in the scene
@@ -66,11 +68,15 @@ export const useFactoryGui = () => {
 
   const deleteStorage = useDeletePreset();
 
-  const factory = new Pane({
-    title: `Name:${SelectedLight?.name} ID: ${SelectedLight?.key}`,
+  const options = useRegisterMeshStore((state) => {
+    return state.options;
   });
-  factory.element.style.width = "120%";
-  factory.element.style.translate = "-20% 0%";
+
+  const factory = new Pane({
+    title: `Name:${SelectedLight?.name} ID: ${SelectedLight?.key} type:${SelectedLight?.lightType}`,
+  });
+  factory.element.style.width = "150%";
+  factory.element.style.translate = "-40% 0%";
 
   useEffect(() => {
     if (!SelectedLight) {
@@ -114,9 +120,14 @@ export const useFactoryGui = () => {
           update(SelectedLight.key, { [key]: ev.value }); //updates local storage
         });
       } else if (key === "target") {
-        factory.addBinding(SelectedLight, "target" as any, {
-          options: {},
-        });
+        factory
+          .addBinding(SelectedLight, key, {
+            options: { default: "", ...options() },
+          })
+          .on("change", (ev) => {
+            updateLights(SelectedLight.key, { [key]: ev.value }); //updates zustand states
+            update(SelectedLight.key, { [key]: ev.value }); //updates local storage
+          });
       }
     });
     factory

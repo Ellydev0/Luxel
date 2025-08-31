@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { useLightHelper } from "./useLightHelper";
 import { useAmbientStore } from "../stores/AmbientStore";
 import { useRegisterMeshStore } from "../stores/RegisterMeshStore";
+import { useHelperStore } from "../stores/HelperStore";
 
 export const CoreLights = () => {
   const lights = useLightStore((state) => {
@@ -22,6 +23,9 @@ export const CoreLights = () => {
 
   const keys = lights.map((light) => light.key);
 
+  const helperScale = useHelperStore((state) => {
+    return state.helperScale;
+  });
   const helper = useLightHelper();
   const lightsRef = useRef<THREE.Light[]>([]);
 
@@ -32,7 +36,7 @@ export const CoreLights = () => {
         const len = lightsRef.current.length;
         el.userData.key = keys[len];
         lightsRef.current.push(el);
-        helper(lightsRef, keys);
+        helper(lightsRef, keys, helperScale);
       }
     }
   };

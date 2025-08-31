@@ -9,6 +9,8 @@ type HelperStore = {
   helperArr: THREE.Object3D[];
   selectedLight: string;
   scene: THREE.Scene;
+  helperScale: number;
+  setHelperScale: (scale: number) => void;
   setSelectedLight: (key: string) => void;
   addHelper: (helper: THREE.Object3D) => void;
   deleteHelpers: (helper: THREE.Object3D) => void;
@@ -17,7 +19,12 @@ type HelperStore = {
 export const useHelperStore = create<HelperStore>()((set) => ({
   helperArr: [] as THREE.Object3D[],
   selectedLight: "",
+  helperScale: 1,
   scene: {} as THREE.Scene,
+  setHelperScale: (scale) =>
+    set((state) => ({
+      helperScale: (state.helperScale = scale),
+    })),
   setSelectedLight: (key) =>
     set((state) => ({ selectedLight: (state.selectedLight = key) })),
   deleteHelpers: (helper) =>

@@ -1,4 +1,4 @@
-<h1>🌟 Luxel - Light debugger for R3F</h1>
+<h1>🌟 Luxel-R3F - Light debugger for R3F</h1>
 
 A Lighting tool for **[React Three Fiber (R3F)](https://github.com/pmndrs/react-three-fiber)** in debugging lights. It drastically reduces the time in setting up a GUI just to debug the lights in a scene trying to find the right lighting.
 
@@ -27,7 +27,9 @@ Instead of writing code just to set up a GUI and debug lights in the scene, Luxe
 You can install Luxel via npm:
 
 ```bash
-npm install --save-dev luxel
+npm install three @react-three/fiber @react-three/drei
+npm install --save-dev luxel-r3f
+
 ```
 
 ---
@@ -37,7 +39,7 @@ npm install --save-dev luxel
 Import Luxel and start debugging your scene:
 
 ```tsx
-import { useLuxel } from "luxel";
+import { useLuxel } from "luxel-r3f";
 
 export default function Scene() {
   const Luxel = useLuxel("presetName");

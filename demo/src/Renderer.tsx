@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import * as THREE from "three";
-import { useRegisterMesh } from "luxel";
+import { useRegisterMesh } from "luxel-r3f";
 // import { useFrame } from "@react-three/fiber";
 
 const Renderer = () => {

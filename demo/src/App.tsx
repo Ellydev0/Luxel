@@ -1,8 +1,7 @@
 import "./App.css";
-// import { Luxel } from "./Luxel";
 import Renderer from "./Renderer";
 import { Environment, OrbitControls } from "@react-three/drei";
-import { useLuxel } from "luxel";
+import { useLuxel } from "luxel-r3f";
 
 function App() {
   const Luxel = useLuxel("scene1", 10);

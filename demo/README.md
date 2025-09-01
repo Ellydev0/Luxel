@@ -1,6 +1,6 @@
 <h1>Luxel demo app</h1>
 
-A minimal demo showcasing **[Luxel](./)** - a light debugger for **[React Three Fiber (R3F)](./)**.
+A minimal demo showcasing **[Luxel](https://github.com/Ellydev0/Luxel)** - a light debugger for **[React Three Fiber (R3F)](https://github.com/pmndrs/react-three-fiber)**.
 
 This demo highlights how Luxel integrates into a 3d scene and allow developers to quickly test Luxel out before [installation](#-get-started).
 
@@ -23,8 +23,8 @@ npm run dev
 
 ## 📚 Learn More
 
-- [React Three Fiber (R3F)](./)
-- [Tweakpane](./)
+- [React Three Fiber (R3F)](https://r3f.docs.pmnd.rs/getting-started/introduction)
+- [Tweakpane](https://tweakpane.github.io/docs/)
 
 ---
 

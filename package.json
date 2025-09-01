@@ -1,14 +1,15 @@
 {
   "name": "luxel",
   "version": "1.0.0",
-  "description": "A framework for managing and quick prototyping of lights in react three fiber scenes ",
+  "description": "A Light debugger for React Three Fiber ",
   "keywords": [
     "luxel",
-    "luxeljs",
+    "debugger",
     "r3f",
-    "light"
+    "light",
+    "react-three-fiber"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "author": "Otoijagha Elliot",
   "type": "commonjs",
   "main": "dist/index.js",

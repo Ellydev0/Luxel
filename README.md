@@ -1,6 +1,6 @@
 <h1>🌟 Luxel - Light debugger for R3F</h1>
 
-A Lighting tool for **[React Three Fiber (R3F)](./)** in debugging lights. It drastically reduces the time in setting up a GUI just to debug the lights in a scene trying to find the right lighting.
+A Lighting tool for **[React Three Fiber (R3F)](https://github.com/pmndrs/react-three-fiber)** in debugging lights. It drastically reduces the time in setting up a GUI just to debug the lights in a scene trying to find the right lighting.
 
 ---
 
@@ -73,7 +73,7 @@ export default function Scene() {
 
 ## 🎮 Demo
 
-[Luxel-Demo](./)
+[Luxel-Demo](https://github.com/Ellydev0/Luxel/tree/main/demo)
 
 ---
 
@@ -93,8 +93,8 @@ If you have ideas for new features (or spot bugs), please open an issue.
 
 ## 📚 Learn More
 
-- [React Three Fiber (R3F)](./)
-- [Tweakpane](./)
+- [React Three Fiber (R3F)](https://r3f.docs.pmnd.rs/getting-started/introduction)
+- [Tweakpane](https://tweakpane.github.io/docs/)(used under the hood)
 
 ---
 

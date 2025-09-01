@@ -1,9 +1,10 @@
 {
-  "name": "luxel",
+  "name": "luxel-r3f",
   "version": "1.0.0",
   "description": "A Light debugger for React Three Fiber ",
   "keywords": [
     "luxel",
+    "luxel-r3f",
     "debugger",
     "r3f",
     "light",

@@ -11,8 +11,8 @@ function App() {
     <div className="render">
       <Luxel shadows camera={{ fov: 35, position: [7, 10, 25] }}>
         <Environment
-          files={"./moonless_golf_1k.hdr"}
-          environmentIntensity={0.2}
+          preset={"night"}
+          environmentIntensity={0.8}
           backgroundBlurriness={0.1}
           background
         />

@@ -1,6 +1,6 @@
 <h1>🌟 Luxel - Light debugger for R3F</h1>
 
-A Lighting tool for R3F in debugging lights. It drastically reduces the time in setting up a GUI just to debug the lights in a scene trying to find the right lighting.
+A Lighting tool for **[React Three Fiber (R3F)](./)** in debugging lights. It drastically reduces the time in setting up a GUI just to debug the lights in a scene trying to find the right lighting.
 
 ---
 
@@ -64,17 +64,16 @@ export default function Scene() {
 
 ## 📚 API Reference
 
-| Function          | Signature                                            | Description                                                                                                                                                |
-| ----------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useLuxel`        | `useLuxel(preset: string) => FC<CanvasProps>`        | Main hook that renders the GUI for debugging your lights. Accepts a preset name and returns a React Three Fiber Canvas component to wrap your 3d elements. |
-| `useRegisterMesh` | `useRegisterMesh(name: string, ref: THREE.Object3D)` | Registers a mesh ref into Luxel's Zustand state. Lets you target meshes by name inside directional or spotlight configurations.                            |
+| Function          | Signature                                                     | Description                                                                                                                                                |
+| ----------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useLuxel`        | `useLuxel(preset: string,helperScale = 1) => FC<CanvasProps>` | Main hook that renders the GUI for debugging your lights. Accepts a preset name and returns a React Three Fiber Canvas component to wrap your 3d elements. |
+| `useRegisterMesh` | `useRegisterMesh(name: string, ref: THREE.Object3D)`          | Registers a mesh ref into Luxel's Zustand state. Lets you target meshes by name inside directional or spotlight configurations.                            |
 
 ---
 
-## ⚠️ Examples
+## 🎮 Demo
 
-Examples are **coming soon...**  
-(Yeah, I know. The suspense is killing me too 🔥👀)
+[Luxel-Demo](./)
 
 ---
 
@@ -92,9 +91,18 @@ If you have ideas for new features (or spot bugs), please open an issue.
 
 ---
 
+## 📚 Learn More
+
+- [React Three Fiber (R3F)](./)
+- [Tweakpane](./)
+
+---
+
 <p align="center">
- Built with ❤️‍🔥 by <b>Elliot</b>
+ Built with ❤️‍🔥 by <b>Elliot Otoijagha</b>
  <br />
  <a href="https://x.com/Elly_dev0">X(Twitter)</a> |
- <a href="https://www.threads.com/@elly_dev0">Threads</a>
+ <a href="https://www.threads.com/@elly_dev0">Threads</a> |
+ <a href="https://www.instagram.com/elly_dev0">Instagram</a> |
+ <a href="https://www.tiktok.com/@elly_dev0">Tiktok</a>
 </p>

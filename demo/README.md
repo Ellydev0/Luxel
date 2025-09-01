@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-**Try Online**: [Luxel-Demo](./)
+**Try Online**: [Luxel-Demo](https://luxel-r3f.netlify.app/)
 
 ---
 

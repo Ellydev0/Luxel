@@ -10,8 +10,9 @@ function App() {
     <div className="render">
       <Luxel shadows camera={{ fov: 35, position: [7, 10, 25] }}>
         <Environment
-          preset={"night"}
-          environmentIntensity={0.8}
+          files={"./night.hdr"}
+          environmentIntensity={0.05}
+          backgroundIntensity={0.3}
           backgroundBlurriness={0.1}
           background
         />
